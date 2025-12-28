@@ -1,0 +1,88 @@
+(define find-class
+    (lambda
+        (_li _el)
+        (
+            cond
+                (empty? _li)
+                    (quote nil)
+                (equal? (car (car _li)) _el)
+                    (nth 1 (car _li))
+                (= 1 1)
+                    (find-class (cdr _li) _el)
+        )
+    )
+),
+
+(define set-class
+    (
+        lambda
+        (_li _el)
+        (
+            cond
+                (= (len _li) 0)
+                    (list)
+                (equal? (nth 0 (nth 0 _li)) (nth 0 _el))
+                    (cons _el (set-class (cdr _li) _el))
+                (= 1 1)
+                    (cons (nth 0 _li) (set-class (cdr _li) _el))
+        )
+    )
+),
+
+(define set-set-class
+    (
+        lambda
+        (_cl _li _el)
+        (set (_cl) (set-class _li _el))
+    )
+),
+
+;new meta-data const,
+;(format: [[name; element]]),
+;TODO build,
+
+(define class-builder
+    (lambda
+        (_li)
+        (
+            cond
+                (= (len _li) 0)
+                    (list)
+                (= 1 1)
+                    (cons (nth 0 _li) (class-builder (cdr _li)))
+        )
+    )
+),
+
+(define class (list
+    (list (quote fi) (quote 5))
+    (list (quote func) (lambda (x) (* x (nth 1 (nth 0 class)))))
+    (list (quote func2) (lambda (self x) (* x (find-class self (quote fi)))))
+)),
+
+;(print (find-class (list (list (quote x) 1) (list (quote y) 2)) (quote y))),
+
+(print (find-class class (quote 5))),
+(print (find-class class (quote fi))),
+(print ((find-class class (quote func2)) class 5)),
+
+(set class (set-class class
+    (list (quote fi) (quote 9))
+)),
+
+(print (quote new-class-fi)),
+(print (find-class class (quote fi))),
+
+(define type-builder 
+    (lambda
+        (_input-type _input_value)
+        (list (quote _input-type) _input-value)
+    )
+),
+
+(set-set-class (quote class) class
+    (list (quote fi) (quote 1))
+),
+
+(print (quote new-class-fi)),
+(print (find-class class (quote fi))),

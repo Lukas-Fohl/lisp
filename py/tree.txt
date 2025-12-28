@@ -1,0 +1,45 @@
+(define my-tree (list (quote nil))),
+
+;FUNC, (define create-tree-element
+    (lambda (_el) (
+        list _el (quote nil) (quote nil)
+    )
+    )
+),
+
+;FUNC, (define insert-tree
+    (lambda (_tree _el) (
+        cond
+            (or (equal? (nth 0 _tree) (quote nil)) (string? (nth 0 _tree)))
+                _el
+            (< (nth 0 _el) (nth 0 _tree))
+                (list (nth 0 _tree) (insert-tree (nth 1 _tree) _el) (nth 2 _tree))
+            (= 1 1)
+                (list (nth 0 _tree) (nth 1 _tree) (insert-tree (nth 2 _tree) _el))
+    )
+    )
+),
+
+;FUNC, (define delete-tree
+    (lambda (_tree _el) (
+    )
+    )
+),
+
+(set my-tree (insert-tree my-tree (create-tree-element (quote 5)))),
+(set my-tree (insert-tree my-tree (create-tree-element (quote 6)))),
+(set my-tree (insert-tree my-tree (create-tree-element (quote 4)))),
+;(print my-tree),
+
+(define ADS-tree (list (quote nil))),
+(set ADS-tree (insert-tree ADS-tree (create-tree-element (quote 8)))),
+(set ADS-tree (insert-tree ADS-tree (create-tree-element (quote 9)))),
+(set ADS-tree (insert-tree ADS-tree (create-tree-element (quote 2)))),
+(set ADS-tree (insert-tree ADS-tree (create-tree-element (quote 10)))),
+(set ADS-tree (insert-tree ADS-tree (create-tree-element (quote 6)))),
+(set ADS-tree (insert-tree ADS-tree (create-tree-element (quote 1)))),
+(set ADS-tree (insert-tree ADS-tree (create-tree-element (quote 3)))),
+(set ADS-tree (insert-tree ADS-tree (create-tree-element (quote 7)))),
+(set ADS-tree (insert-tree ADS-tree (create-tree-element (quote 5)))),
+(set ADS-tree (insert-tree ADS-tree (create-tree-element (quote 4)))),
+(print ADS-tree),

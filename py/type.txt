@@ -1,0 +1,110 @@
+(import class.txt),
+(define global-type-list
+    (list
+        (quote int)
+        (quote double)
+        (quote bool)
+    )
+),
+
+(define type-lookup
+    (lambda (_li _el) (
+        cond
+            (empty? _li)
+                (quote F)
+            (equal? (nth 0 _li) _el)
+                (quote T)
+            (= 1 1)
+                (type-lookup (cdr _li) _el)
+    )
+    )
+),
+
+;FUNC create-var-temp,
+(define create-var-temp
+    (lambda (_mut _type _el) (
+        if (
+            and (
+                or (equal? _mut (quote mut)) (equal? _mut (quote const)))
+                (equal? (type-lookup global-type-list _type) (quote T))
+           )
+            (list _mut _type _el)
+        (quote F)
+    )
+    )
+),
+
+;(layout: [name;[const?;type;value]]),
+(define global-var-list
+    (list
+        (list (quote PI) (create-var-temp (quote const) (quote double) (quote 3.1415)))
+    )
+),
+
+(define var-lookup
+    (lambda (_li _el) (
+        cond
+            (empty? _li)
+                (quote F)
+            (equal? (nth 0 (nth 0 _li)) _el)
+                (nth 1 (nth 0 _li))
+            (= 1 1)
+                (var-lookup (cdr _li) _el)
+    )
+    )
+),
+
+;FUNC var-lookup-value,
+(define var-lookup-value
+    (lambda (_name) (
+        if (equal? (var-lookup global-var-list _name) (quote F))
+            (quote F)
+            (nth 2 (var-lookup global-var-list _name))
+    )
+    )
+),
+
+(define set-var-value-helper
+    (lambda (_li _name _value) (
+        cond
+            (empty? _li)
+                (list)
+            (equal? (nth 0 (nth 0 _li)) _name)
+                (cons (list _name (list
+                    (nth 0 (nth 1 (nth 0 _li)))
+                    (nth 1 (nth 1 (nth 0 _li)))
+                    _value
+                    ))
+                    (set-var-value-helper (cdr _li) _name _value))
+            (= 1 1)
+                (cons (nth 0 _li) (set-var-value-helper (cdr _li) _name _value))
+    )
+    )
+),
+
+;FUNC set-var-value,
+(define set-var-value
+    (lambda (_name _value)
+        (set global-var-list (set-var-value-helper global-var-list _name _value))
+    )
+),
+
+;FUNC create-var,
+(define create-var
+    (lambda (_name _mut _type _el) (
+        if (not (equal? (create-var-temp _mut _type _el) (quote F)))
+            (set global-var-list (append global-var-list (list (list _name (create-var-temp _mut _type _el)))))
+            (quote T)
+    )
+    )
+),
+
+(create-var (quote four) (quote mut) (quote int) (quote 4)),
+
+(set-var-value (quote PI) (quote 5)),
+(set-var-value (quote four) (quote 8)),
+
+(print global-var-list),
+
+(print (var-lookup-value (quote PI))),
+(print (var-lookup-value (quote four))),

@@ -1,0 +1,11 @@
+(define 'a 13.2)
+(a)
+(define 'b (list a 5))
+(b)
+(car (ksdölfj sakdfjöla asdkfjaölsd dsk fjösa))
+(cdr (ksdölfj sakdfjöla asdkfjaölsd dsk fjösa))
+(list (list "djfa") 1234 a)
+(abs -13.2)
+-- (ab 132 adsj)ldsjfölsa -- some
+-- test
+-- (absjfd (bbb (ccc "aajsd ksjföl" 2341)) f)

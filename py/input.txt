@@ -1,0 +1,72 @@
+(define sq
+    (lambda (x)
+        (* x x)
+    )
+),
+(define l 
+    (list 1 2 3 4 5 6 7 (quote a))
+),
+(cdr l),
+(sq 6),
+(if (= 1 2) (sq 2) (sq 4)),
+(cond
+    (= 1 2)
+        (sq 2)
+    (= 1 1)
+        (sq 6)),
+(nth 4 (list 1 2 3 4 5)),
+
+(define cl (list
+    (list (quote fi) (quote 5))
+    (list (quote func) (lambda (x) (* x (nth 1 (nth 0 cl)))))
+    (list (quote func2) (lambda (self x) (* x (find-cl self (quote fi)))))
+)),
+
+(define find-cl
+    (lambda
+        (li el)
+        (
+            cond
+                (empty? li)
+                    (quote nil)
+                (equal? (car (car li)) el)
+                    (nth 1 (car li))
+                (= 1 1)
+                    (find-cl (cdr li) el)
+        )
+    )
+),
+
+(define set-cl
+    (
+        lambda
+        (li el)
+        (
+            cond
+                (= (len li) 0)
+                    (list)
+                (equal? (nth 0 (nth 0 li)) (nth 0 el))
+                    (cons el (set-cl (cdr li) el))
+                (= 1 1)
+                    (cons (nth 0 li) (set-cl (cdr li) el))
+        )
+    )
+),
+
+;(print (find-cl (list (list (quote x) 1) (list (quote y) 2)) (quote y))),
+
+(print (find-cl cl (quote 5))),
+(print (find-cl cl (quote fi))),
+(print ((find-cl cl (quote func2)) cl 5)),
+
+(set cl (set-cl cl
+    (list (quote fi) (quote 9))
+)),
+
+(print (quote new-cl-fi)),
+(print (find-cl cl (quote fi))),
+
+;(nth 4 l),
+;(define r 10),
+;(define res (* pi (sq r))),
+;(print res)
