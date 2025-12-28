@@ -6,6 +6,7 @@
 (cdr (ksdölfj sakdfjöla asdkfjaölsd dsk fjösa))
 (list (list "djfa") 1234 a)
 (abs -13.2)
+(lambda (a b d) (cdr a))
 -- (ab 132 adsj)ldsjfölsa -- some
 -- test
 -- (absjfd (bbb (ccc "aajsd ksjföl" 2341)) f)
