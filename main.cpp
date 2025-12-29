@@ -54,24 +54,24 @@ reading rules:
 
 COOL things i need to build CURR
  - [x] env
- - [ ] Prcedure (lambda)
+ - [x] Prcedure (lambda)
     - [x] class
     - [x] print
-    - [ ] everything in eval
-        - [ ] if lambda return procedure
-        - [ ] if not found eval -> check for lambda
+    - [x] everything in eval
+        - [x] if lambda return procedure
+        - [x] if not found eval -> check for lambda
             - lambda call:
                 - first element of list can be:
-                    [ ] list
+                    [x] list
                         check if first is lambda
                         -> eval to proc
                         -> call
-                    [ ] word
+                    [x] word
                         -> check if return is procedure
                         -> call
-                    [ ] procedure
+                    [x] procedure
                         -> call
-        - [ ] on call insert new env -> in class
+        - [x] on call insert new env -> in class
 
  - do
     - take multiple thing and just eval in order

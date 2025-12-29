@@ -185,7 +185,11 @@ list eval(list listIn, env* envIn)
         if (c.atomType == atom::string_i || c.atomType == atom::num_i) {
             return listIn;
         }
-        return envIn->find(std::get<atom>(listIn.content).content);
+        list found = envIn->find(std::get<atom>(listIn.content).content);
+        if (found.listType == list::listType::procedure_l && std::get<vector<procedure>>(found.content).at(0).argsNames.size() == 0) {
+            return std::get<vector<procedure>>(found.content).at(0).call(envIn);
+        }
+        return found;
     } else if (std::get<vector<list>>(listIn.content).size() == 0) {
         return emptyList();
     }

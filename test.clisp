@@ -14,12 +14,22 @@
 -- funcs
 (define self (lambda (y x) (y x x)))
 (define add (lambda (y x) (+ y x)))
+(define mult (lambda (y x) (* y x)))
 (define apply (lambda (y x z) (y x z)))
 -- application
 (print "some cool addition")
-(print (add (apply 'add 5 6) 5))
-(self '- 5)
-(self '+ 5)
+(print (add (apply 'mult 5 6) 5))
+(print (+ (apply '* 5 6) 5))
+(print (+ (* 5 6) 5))
+-- (self '- 5)
+-- (self '+ 5)
+(print "some cool lambda test")
+(print ((lambda (x) (+ x 5)) 5 ))
+(print (add 5 5))
+(define abc (lambda () (list "a" "b" "c")))
+(print (car abc))
+(define cde (list "c" "d" "e"))
+(print (car cde))
 
 
 
