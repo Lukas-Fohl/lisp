@@ -18,6 +18,7 @@ typedef struct {
         comma_i,
         backComma_i,
         word_i,
+        empty_i,
         atomType_size,
     } atomType;
 } atom;
@@ -37,6 +38,7 @@ typedef struct list {
         vector<list>,
         vector<procedure>> // cuz fuck c++ and all its bullshit rules
         content;
+    bool shouldEval;
 } list;
 
 list emptyList();
@@ -127,7 +129,7 @@ public:
         for (size_t i = 0; i < this->argsNames.size(); i++) {
             tempEnv.content.insert({
                 this->argsNames.at(i),
-                eval(this->argsValues.at(i), envIn),
+                this->argsValues.at(i),
             });
         }
         tempEnv.outer = envIn;

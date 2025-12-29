@@ -1,11 +1,12 @@
 #include <assert.h>
+#include <cstddef>
 #include <iostream>
 
 #include "clisp.hpp"
 
 list emptyList()
 {
-    return list { list::listType::empty_l, atom { "'", atom::quote_i } };
+    return list { list::listType::empty_l, atom { "", atom::empty_i }, true };
 }
 
 void giveUp(string reason, unsigned exitCode) // default in header for exitcode
@@ -29,6 +30,24 @@ bool isNumber(char c)
     return (unsigned)c >= 48 && (unsigned)c <= 57;
 }
 
+vector<list> clean(vector<list> listIn)
+{
+    vector<list> ret = {};
+    for (size_t i = 0; i < listIn.size(); i++) {
+        if (listIn.at(i).listType == list::listType::element_l
+            && std::get<atom>(listIn.at(i).content).atomType == atom::quote_i
+            && std::get<atom>(listIn.at(i).content).content == "'"
+            && i != listIn.size() - 1) {
+            listIn.at(i + 1).shouldEval = false;
+            ret.push_back(listIn.at(i + 1));
+            i++;
+        } else {
+            ret.push_back(listIn.at(i));
+        }
+    }
+    return ret;
+}
+
 tuple<unsigned, vector<list>> readList(string input)
 {
 
@@ -45,18 +64,18 @@ tuple<unsigned, vector<list>> readList(string input)
 
         switch (input.at(inputIdx)) {
         case '\'':
-            temp.push_back(list { list::listType::element_l, atom { "'", atom::quote_i } });
+            temp.push_back(list { list::listType::element_l, atom { "'", atom::quote_i }, true });
             break;
         case ',':
-            temp.push_back(list { list::listType::element_l, atom { ",", atom::comma_i } });
+            temp.push_back(list { list::listType::element_l, atom { ",", atom::comma_i }, true });
             break;
         case '`':
-            temp.push_back(list { list::listType::element_l, atom { "`", atom::backComma_i } });
+            temp.push_back(list { list::listType::element_l, atom { "`", atom::backComma_i }, true });
             break;
         case '\"':
             // todo escape
             if (!isString) {
-                temp.push_back(list { list::listType::element_l, atom { "", atom::string_i } });
+                temp.push_back(list { list::listType::element_l, atom { "", atom::string_i }, true });
             }
             isString = !isString;
             break;
@@ -64,11 +83,11 @@ tuple<unsigned, vector<list>> readList(string input)
             tuple<unsigned, vector<list>> getNew = readList(input.substr(inputIdx + 1));
             inputIdx += std::get<0>(getNew) + 1;
             // cout << std::get<0>(getNew) << endl;
-            temp.push_back(list { list::listType::list_l, std::get<1>(getNew) });
+            temp.push_back(list { list::listType::list_l, std::get<1>(getNew), true });
             break;
         }
         case ')':
-            return { inputIdx, temp };
+            return { inputIdx, clean(temp) };
             break;
         default:
             if (isWhiteSpace(input.at(inputIdx))) {
@@ -82,7 +101,7 @@ tuple<unsigned, vector<list>> readList(string input)
                 if (isNum) {
                     std::get<atom>(temp.at(temp.size() - 1).content).content += input.at(inputIdx);
                 } else {
-                    temp.push_back(list { list::listType::element_l, atom { string(1, input.at(inputIdx)), atom::num_i } });
+                    temp.push_back(list { list::listType::element_l, atom { string(1, input.at(inputIdx)), atom::num_i }, true });
                     isNum = true;
                     isString = false;
                     isWord = false;
@@ -99,14 +118,14 @@ tuple<unsigned, vector<list>> readList(string input)
                 break;
             } else if (input.at(inputIdx) == '-' && !isNum && !isWord && !isString && isNumber(input.at(inputIdx + 1))) {
                 isNum = true;
-                temp.push_back(list { list::listType::element_l, atom { string(1, input.at(inputIdx)), atom::num_i } });
+                temp.push_back(list { list::listType::element_l, atom { string(1, input.at(inputIdx)), atom::num_i }, true });
                 break;
             }
 
             if (isWord) {
                 std::get<atom>(temp.at(temp.size() - 1).content).content += input.at(inputIdx);
             } else {
-                temp.push_back(list { list::listType::element_l, atom { string(1, input.at(inputIdx)), atom::word_i } });
+                temp.push_back(list { list::listType::element_l, atom { string(1, input.at(inputIdx)), atom::word_i }, true });
                 isWord = true;
                 isNum = false;
                 isString = false;
@@ -114,7 +133,7 @@ tuple<unsigned, vector<list>> readList(string input)
         }
     }
 
-    return { inputIdx, temp };
+    return { inputIdx, clean(temp) };
 }
 
 void printList(std::vector<list> listIn)
@@ -144,11 +163,11 @@ void printList(std::vector<list> listIn)
         } else if (listIn.at(i).listType == list::listType::procedure_l) {
             cout << "(lambda (";
             procedure p = std::get<std::vector<procedure>>(listIn.at(i).content).at(0);
-            for(size_t j = 0; j < p.argsNames.size(); j++){
+            for (size_t j = 0; j < p.argsNames.size(); j++) {
                 cout << p.argsNames.at(j) << ((j == p.argsNames.size() - 1) ? "" : ", ");
             }
             cout << ") ";
-            printList({p.func});
+            printList({ p.func });
             cout << ")" << ((i == listIn.size() - 1) ? "" : ", ");
         }
     }
@@ -156,6 +175,10 @@ void printList(std::vector<list> listIn)
 
 list eval(list listIn, env* envIn)
 {
+    if (!listIn.shouldEval) {
+        listIn.shouldEval = true;
+        return listIn;
+    }
     assert(listIn.listType != list::listType::empty_l);
     if (listIn.listType == list::listType::element_l) {
         atom c = std::get<atom>(listIn.content);
@@ -163,14 +186,24 @@ list eval(list listIn, env* envIn)
             return listIn;
         }
         return envIn->find(std::get<atom>(listIn.content).content);
-        // cout << std::get<atom>(listIn->content).content << endl;
     } else if (std::get<vector<list>>(listIn.content).size() == 0) {
         return emptyList();
     }
 
     vector<list> li = std::get<vector<list>>(listIn.content);
     if (li.at(0).listType == list::listType::list_l) {
-        giveUp("cannot eval list");
+        if (std::get<atom>(std::get<vector<list>>(li.at(0).content).at(0).content).content == "lambda") {
+            list func = eval(std::get<vector<list>>(li.at(0).content));
+            procedure proc = std::get<vector<procedure>>(func.content).at(0);
+            for (size_t i = 1; i < li.size(); i++) {
+                proc.argsValues.push_back(eval(li.at(i), envIn));
+                // printList({li.at(i)});
+                // cout << endl;
+            }
+            return proc.call(envIn);
+        } else {
+            giveUp("cannot eval list");
+        }
     }
 
     if (std::get<vector<list>>(listIn.content).size() == 1) {
@@ -185,43 +218,62 @@ list eval(list listIn, env* envIn)
     }
 
     if (op == "abs") {
+        assert(args.at(0).listType == list::listType::element_l);
         string v = std::get<atom>(args.at(0).content).content;
-        if (v.find(".") == v.npos) {
-            int abs = std::abs(std::atoi(v.c_str()));
-            return list { list::listType::element_l, atom { std::to_string(abs), atom::num_i } };
-        } else {
-            double abs = std::abs(std::atof(v.c_str()));
-            return list { list::listType::element_l, atom { std::to_string(abs), atom::num_i } };
-        }
+        double abs = std::abs(std::atof(v.c_str()));
+        return list { list::listType::element_l, atom { std::to_string(abs), atom::num_i }, true };
+    } else if (op == "+") {
+        list lhs = eval(args.at(0), envIn);
+        list rhs = eval(args.at(1), envIn);
+        assert(rhs.listType == list::listType::element_l && lhs.listType == list::listType::element_l);
+        double lhsD = std::atof(std::get<atom>(lhs.content).content.c_str());
+        double rhsD = std::atof(std::get<atom>(rhs.content).content.c_str());
+        double res = lhsD + rhsD;
+        return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
+    } else if (op == "-") {
+        list lhs = eval(args.at(0), envIn);
+        list rhs = eval(args.at(1), envIn);
+        assert(rhs.listType == list::listType::element_l && lhs.listType == list::listType::element_l);
+        double lhsD = std::atof(std::get<atom>(lhs.content).content.c_str());
+        double rhsD = std::atof(std::get<atom>(rhs.content).content.c_str());
+        double res = lhsD - rhsD;
+        return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
+    } else if (op == "*") {
+        list lhs = eval(args.at(0), envIn);
+        list rhs = eval(args.at(1), envIn);
+        assert(rhs.listType == list::listType::element_l && lhs.listType == list::listType::element_l);
+        double lhsD = std::atof(std::get<atom>(lhs.content).content.c_str());
+        double rhsD = std::atof(std::get<atom>(rhs.content).content.c_str());
+        double res = lhsD * rhsD;
+        return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
     } else if (op == "car") {
-        return std::get<vector<list>>(args.at(0).content).at(0);
-        // return eval(std::get<vector<list>>(args.at(0).content).at(0),envIn);
+        list argRes = eval(args.at(0), envIn);
+        assert(argRes.listType == list::listType::list_l);
+        return std::get<vector<list>>(argRes.content).at(0);
     } else if (op == "cdr") {
-        assert(args.size() > 0 && args.at(0).listType == list::listType::list_l);
+        list argRes = eval(args.at(0), envIn);
+        assert(argRes.listType == list::listType::list_l);
         vector<list> rest = {};
-        vector<list> argFirstList = std::get<vector<list>>(args.at(0).content);
-        // vector<list> argFirstList = {eval(std::get<vector<list>>(args.at(0).content),envIn)};
-        for (size_t i = 1; i < argFirstList.size(); i++) {
-            rest.push_back(argFirstList.at(i));
+        for (size_t i = 1; i < std::get<vector<list>>(argRes.content).size(); i++) {
+            rest.push_back(std::get<vector<list>>(argRes.content).at(i));
         }
-        return list { list::listType::list_l, rest };
+        return list { list::listType::list_l, rest, true };
     } else if (op == "define") {
-        // check next is quote i.e. ', some
-        // eval next
-        // insert / set
-        assert(args.size() >= 3
+        assert(args.size() >= 2
             && args.at(0).listType == list::listType::element_l
-            && std::get<atom>(args.at(0).content).atomType == atom::quote_i
-            && args.at(1).listType == list::listType::element_l
-            && std::get<atom>(args.at(1).content).atomType == atom::word_i);
-        list res = eval(args.at(2), envIn);
-        envIn->content.insert({ std::get<atom>(args.at(1).content).content, res });
+            && std::get<atom>(args.at(0).content).atomType == atom::word_i);
+        list res = eval(args.at(1), envIn);
+        envIn->content.insert({ std::get<atom>(args.at(0).content).content, res });
     } else if (op == "list") {
         vector<list> rest = {};
         for (auto l : args) {
             rest.push_back(eval(l, envIn));
         }
-        return list { list::listType::list_l, rest };
+        return list { list::listType::list_l, rest, true };
+    } else if (op == "print") {
+        printList({ eval(args.at(0), envIn) });
+        cout << endl;
+        return emptyList();
     } else if (op == "lambda") {
         vector<string> argsNames = {};
         assert(args.size() == 2);
@@ -232,21 +284,25 @@ list eval(list listIn, env* envIn)
             assert(std::get<atom>(oneList.at(i).content).atomType == atom::word_i);
             argsNames.push_back(std::get<atom>(oneList.at(i).content).content);
         }
-        return list { list::listType::procedure_l, vector<procedure> { procedure(argsNames, args.at(1)) } };
+        return list { list::listType::procedure_l, vector<procedure> { procedure(argsNames, args.at(1)) }, true };
     } else {
-        // list procList = envIn->find(op);
-        // if (procList.listType == list::listType::procedure_l) {
-        //     procedure proc = std::get<std::vector<procedure>>(procList.content).at(0);
-        //     // Evaluate arguments
-        //     vector<list> evaledArgs;
-        //     for (auto& arg : args) {
-        //         evaledArgs.push_back(eval(arg, envIn));
-        //     }
-        //     proc.argsValues = evaledArgs;
-        //     return proc.call(envIn);
-        // } else {
-        giveUp("WTF is " + op);
-        // }
+        list procList = envIn->find(op);
+        if (procList.listType == list::listType::procedure_l) {
+            procedure proc = std::get<std::vector<procedure>>(procList.content).at(0);
+            // Evaluate arguments
+            vector<list> evaledArgs;
+            for (auto& arg : args) {
+                evaledArgs.push_back(eval(arg, envIn));
+            }
+            proc.argsValues = evaledArgs;
+            return proc.call(envIn);
+        } else if (procList.listType == list::listType::element_l) {
+            vector<list> newList = { (procList) };
+            newList.insert(newList.end(), args.begin(), args.end());
+            return eval(newList, envIn);
+        } else {
+            giveUp("WTF is " + op);
+        }
     }
 
     // do the shit
@@ -254,5 +310,5 @@ list eval(list listIn, env* envIn)
 }
 list eval(vector<list> listIn, env* envIn) // still default
 {
-    return eval(list { list::listType::list_l, listIn }, envIn);
+    return eval(list { list::listType::list_l, listIn, true }, envIn);
 }

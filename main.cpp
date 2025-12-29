@@ -30,8 +30,9 @@ int main(int argn, char** argc)
     vector<list> exprList = std::get<1>(readList(fileContent));
     for (list a : exprList) {
         // printList({ a });
-        printList({ eval(a) });
-        cout << endl;
+        eval(a);
+        // printList({ eval(a) });
+        // cout << endl;
     }
 
     // env myEnv = { { "test" }, { new list { list::listType::element_l, atom { "'", atom::quote_i } } } };
@@ -59,6 +60,17 @@ COOL things i need to build CURR
     - [ ] everything in eval
         - [ ] if lambda return procedure
         - [ ] if not found eval -> check for lambda
+            - lambda call:
+                - first element of list can be:
+                    [ ] list
+                        check if first is lambda
+                        -> eval to proc
+                        -> call
+                    [ ] word
+                        -> check if return is procedure
+                        -> call
+                    [ ] procedure
+                        -> call
         - [ ] on call insert new env -> in class
 
  - do

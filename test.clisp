@@ -1,12 +1,39 @@
-(define 'a 13.2)
-(a)
-(define 'b (list a 5))
-(b)
-(car (ksdölfj sakdfjöla asdkfjaölsd dsk fjösa))
-(cdr (ksdölfj sakdfjöla asdkfjaölsd dsk fjösa))
-(list (list "djfa") 1234 a)
-(abs -13.2)
-(lambda (a b d) (cdr a))
+-- (define a 5)
+-- ('a)
+-- (a)
+
+-- (define a 13.2)
+-- (a)
+-- (define b (list a 5))
+-- (b)
+
+
+
+
+
+-- funcs
+(define self (lambda (y x) (y x x)))
+(define add (lambda (y x) (+ y x)))
+(define apply (lambda (y x z) (y x z)))
+-- application
+(print "some cool addition")
+(print (add (apply 'add 5 6) 5))
+(self '- 5)
+(self '+ 5)
+
+
+
+
+
+-- (+ 1 2)
+-- (- 1 2)
+-- (car (list "ksdölfj" "sakdfjöla" "asdkfjaölsd" "dsk" "fjösa"))
+-- (cdr (list "ksdölfj" "sakdfjöla" "asdkfjaölsd" "dsk" "fjösa"))
+-- (list (list "djfa") 1234 a)
+-- (abs -13.2)
+-- (lambda (a b d) (cdr a))
+-- ((lambda (a b d) (cdr a)) (list "a" "b") 4 4)
+
 -- (ab 132 adsj)ldsjfölsa -- some
 -- test
 -- (absjfd (bbb (ccc "aajsd ksjföl" 2341)) f)
