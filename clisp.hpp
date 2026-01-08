@@ -24,6 +24,7 @@ typedef struct {
 } atom;
 
 class procedure;
+class macro;
 
 typedef struct list {
     enum class listType {
@@ -96,6 +97,26 @@ inline env globalEnv = defaultEnv();
 
 list eval(vector<list> listIn, env* envIn = &globalEnv);
 list eval(list listIn, env* envIn = &globalEnv);
+
+class macro {
+public:
+    vector<string> argsNames;
+    vector<list> argsValues;
+    list func;
+    macro()
+        : argsNames({})
+        , argsValues({})
+        , func(emptyList())
+    {
+    }
+
+    macro(vector<string> argsNamesIn, list funcIn)
+        : argsNames(argsNamesIn)
+        , argsValues({})
+        , func(funcIn)
+    {
+    }
+};
 
 class procedure {
 public:

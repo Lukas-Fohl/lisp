@@ -19,6 +19,7 @@
 -- application
 (print "some cool addition")
 (print (add (apply 'mult 5 6) 5))
+(print (add (apply mult 5 6) 5))
 (print (+ (apply '* 5 6) 5))
 (print (+ (* 5 6) 5))
 -- (self '- 5)
@@ -30,6 +31,12 @@
 (print (car abc))
 (define cde (list "c" "d" "e"))
 (print (car cde))
+
+(define ali (list 1 2 3))
+(define bli (list 4 5 6))
+(print (cons ali bli))
+
+(print (sqrt 25))
 
 
 

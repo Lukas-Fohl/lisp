@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <cmath>
 #include <cstddef>
 #include <iostream>
 
@@ -179,6 +180,7 @@ list eval(list listIn, env* envIn)
         listIn.shouldEval = true;
         return listIn;
     }
+
     assert(listIn.listType != list::listType::empty_l);
     if (listIn.listType == list::listType::element_l) {
         atom c = std::get<atom>(listIn.content);
@@ -250,6 +252,29 @@ list eval(list listIn, env* envIn)
         double rhsD = std::atof(std::get<atom>(rhs.content).content.c_str());
         double res = lhsD * rhsD;
         return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
+    } else if (op == "/") {
+        list lhs = eval(args.at(0), envIn);
+        list rhs = eval(args.at(1), envIn);
+        assert(rhs.listType == list::listType::element_l && lhs.listType == list::listType::element_l);
+        double lhsD = std::atof(std::get<atom>(lhs.content).content.c_str());
+        double rhsD = std::atof(std::get<atom>(rhs.content).content.c_str());
+        double res = lhsD / rhsD;
+        return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
+    } else if (op == "sqrt") {
+        list numArg = eval(args.at(0), envIn);
+        assert(numArg.listType == list::listType::element_l);
+        double numArgD = std::atof(std::get<atom>(numArg.content).content.c_str());
+        double res = std::sqrt(numArgD);
+        return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
+    } else if (op == "cons") {
+        list argLHS = eval(args.at(0), envIn);
+        list argRHS = eval(args.at(1), envIn);
+        assert(argLHS.listType == list::listType::list_l && argRHS.listType == list::listType::list_l);
+        auto res = std::get<vector<list>>(argLHS.content);
+        for (auto el : std::get<vector<list>>(argRHS.content)) {
+            res.push_back(el);
+        }
+        return list { list::listType::list_l, vector<list> { res }, true };
     } else if (op == "car") {
         list argRes = eval(args.at(0), envIn);
         assert(argRes.listType == list::listType::list_l);
@@ -262,6 +287,13 @@ list eval(list listIn, env* envIn)
             rest.push_back(std::get<vector<list>>(argRes.content).at(i));
         }
         return list { list::listType::list_l, rest, true };
+    } else if (op == "nth") {
+        list idxEl = eval(args.at(0), envIn);
+        assert(idxEl.listType == list::listType::element_l && std::get<atom>(idxEl.content).atomType == atom::num_i);
+        size_t idx = std::atoi(std::get<atom>(idxEl.content).content.c_str());
+        list argRes = eval(args.at(1), envIn);
+        assert(argRes.listType == list::listType::list_l);
+        return std::get<vector<list>>(argRes.content).at(idx);
     } else if (op == "define") {
         assert(args.size() >= 2
             && args.at(0).listType == list::listType::element_l

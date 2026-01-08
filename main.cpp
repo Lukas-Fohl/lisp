@@ -3,7 +3,6 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <vector>
 
 #include "clisp.hpp"
 
@@ -73,14 +72,18 @@ COOL things i need to build CURR
                         -> call
         - [x] on call insert new env -> in class
 
- - do
-    - take multiple thing and just eval in order
-
  - macro -> do the macro stuff
+    - if "macro" is found put like function into macro
+    - before eval anything:
+        - search over all elements:
+            - if macro found -> replace + eval if contained "," or args for macro
+        - eval resulting list
+    - macro rules:
+        - format: (defmacro (args...) (body-expression))
+        - body rules:
+            - continue with expression
+            - everything led by "," gets evaluated
 
  - add some common function
  - everything as double
-
- - [ ] function notion
- - [ ] eval function
  */
