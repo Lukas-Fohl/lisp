@@ -1,9 +1,13 @@
 #include <assert.h>
+#include <cctype>
 #include <cmath>
 #include <cstddef>
+#include <fstream>
 #include <iostream>
+#include <string>
 
 #include "clisp.hpp"
+#include "funcs.hpp"
 
 list emptyList()
 {
@@ -97,6 +101,15 @@ tuple<unsigned, vector<list>> readList(string input)
                 isString = false;
                 break;
             }
+            if (
+                !isNum && !isWord && !isString && (input.at(inputIdx) == 't' || input.at(inputIdx) == 'f')
+                && !std::isalnum(input.at(inputIdx + 1))) {
+                temp.push_back(list { list::listType::element_l, atom { string(1, input.at(inputIdx)), atom::bool_i }, true });
+                isNum = true;
+                isString = false;
+                isWord = false;
+                break;
+            }
 
             if (isNumber(input.at(inputIdx)) && !isString && !isWord) {
                 if (isNum) {
@@ -152,6 +165,8 @@ void printList(std::vector<list> listIn)
                 cout << "~" << content << "~";
             } else if (std::get<atom>(listIn.at(i).content).atomType == atom::string_i) {
                 cout << "\"" << content << "\"";
+            } else if (std::get<atom>(listIn.at(i).content).atomType == atom::bool_i) {
+                cout << ((content == TRUE_STRING) ? "True" : "False");
             } else {
                 cout << content;
             }
@@ -184,7 +199,7 @@ list eval(list listIn, env* envIn)
     assert(listIn.listType != list::listType::empty_l);
     if (listIn.listType == list::listType::element_l) {
         atom c = std::get<atom>(listIn.content);
-        if (c.atomType == atom::string_i || c.atomType == atom::num_i) {
+        if (c.atomType == atom::string_i || c.atomType == atom::num_i || c.atomType == atom::bool_i) {
             return listIn;
         }
         list found = envIn->find(std::get<atom>(listIn.content).content);
@@ -194,6 +209,8 @@ list eval(list listIn, env* envIn)
         return found;
     } else if (std::get<vector<list>>(listIn.content).size() == 0) {
         return emptyList();
+    } else if (std::get<vector<list>>(listIn.content).size() == 1) {
+        return eval(std::get<vector<list>>(listIn.content).at(0), envIn);
     }
 
     vector<list> li = std::get<vector<list>>(listIn.content);
@@ -212,9 +229,9 @@ list eval(list listIn, env* envIn)
         }
     }
 
-    if (std::get<vector<list>>(listIn.content).size() == 1) {
-        return eval(std::get<vector<list>>(listIn.content).at(0), envIn);
-    }
+    // if (std::get<vector<list>>(listIn.content).size() == 1) {
+    //     return eval(std::get<vector<list>>(listIn.content).at(0), envIn);
+    // }
 
     assert(li.at(0).listType == list::listType::element_l);
     string op = std::get<atom>(li.at(0).content).content;
@@ -223,49 +240,65 @@ list eval(list listIn, env* envIn)
         args.push_back(li.at(i));
     }
 
-    if (op == "abs") {
-        assert(args.at(0).listType == list::listType::element_l);
-        string v = std::get<atom>(args.at(0).content).content;
-        double abs = std::abs(std::atof(v.c_str()));
-        return list { list::listType::element_l, atom { std::to_string(abs), atom::num_i }, true };
-    } else if (op == "+") {
+    if (auto findFunc = arithmeticFuncMap.find(op); findFunc != arithmeticFuncMap.end()) {
+        return findFunc->second(args, envIn);
+    } else if (op == "==") {
         list lhs = eval(args.at(0), envIn);
         list rhs = eval(args.at(1), envIn);
-        assert(rhs.listType == list::listType::element_l && lhs.listType == list::listType::element_l);
-        double lhsD = std::atof(std::get<atom>(lhs.content).content.c_str());
-        double rhsD = std::atof(std::get<atom>(rhs.content).content.c_str());
-        double res = lhsD + rhsD;
-        return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
-    } else if (op == "-") {
-        list lhs = eval(args.at(0), envIn);
-        list rhs = eval(args.at(1), envIn);
-        assert(rhs.listType == list::listType::element_l && lhs.listType == list::listType::element_l);
-        double lhsD = std::atof(std::get<atom>(lhs.content).content.c_str());
-        double rhsD = std::atof(std::get<atom>(rhs.content).content.c_str());
-        double res = lhsD - rhsD;
-        return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
-    } else if (op == "*") {
-        list lhs = eval(args.at(0), envIn);
-        list rhs = eval(args.at(1), envIn);
-        assert(rhs.listType == list::listType::element_l && lhs.listType == list::listType::element_l);
-        double lhsD = std::atof(std::get<atom>(lhs.content).content.c_str());
-        double rhsD = std::atof(std::get<atom>(rhs.content).content.c_str());
-        double res = lhsD * rhsD;
-        return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
-    } else if (op == "/") {
-        list lhs = eval(args.at(0), envIn);
-        list rhs = eval(args.at(1), envIn);
-        assert(rhs.listType == list::listType::element_l && lhs.listType == list::listType::element_l);
-        double lhsD = std::atof(std::get<atom>(lhs.content).content.c_str());
-        double rhsD = std::atof(std::get<atom>(rhs.content).content.c_str());
-        double res = lhsD / rhsD;
-        return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
-    } else if (op == "sqrt") {
-        list numArg = eval(args.at(0), envIn);
-        assert(numArg.listType == list::listType::element_l);
-        double numArgD = std::atof(std::get<atom>(numArg.content).content.c_str());
-        double res = std::sqrt(numArgD);
-        return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
+        if (lhs.listType != rhs.listType || lhs.listType == list::listType::empty_l || rhs.listType == list::listType::empty_l) { // undefined is false
+            return list { list::listType::element_l, atom { FALSE_STRING, atom::bool_i }, true };
+        }
+        switch (lhs.listType) {
+        case list::listType::list_l:
+            giveUp("TODO impl list comp");
+            break;
+        case list::listType::procedure_l:
+            giveUp("TODO impl procedure comp");
+            break;
+        case list::listType::empty_l:
+            return list { list::listType::element_l, atom { FALSE_STRING, atom::bool_i }, true };
+            break;
+        case list::listType::element_l:
+            if (std::get<atom>(lhs.content).atomType == atom::num_i && std::get<atom>(lhs.content).atomType == atom::num_i) {
+                list lhs = eval(args.at(0), envIn);
+                list rhs = eval(args.at(1), envIn);
+                assert(rhs.listType == list::listType::element_l && lhs.listType == list::listType::element_l);
+                double lhsD = std::atof(std::get<atom>(lhs.content).content.c_str());
+                double rhsD = std::atof(std::get<atom>(rhs.content).content.c_str());
+                if (lhsD == rhsD) {
+                    return list { list::listType::element_l, atom { TRUE_STRING, atom::bool_i }, true };
+                } else {
+                    return list { list::listType::element_l, atom { FALSE_STRING, atom::bool_i }, true };
+                }
+            }
+
+            if (std::get<atom>(lhs.content).content == std::get<atom>(rhs.content).content
+                && std::get<atom>(lhs.content).atomType == std::get<atom>(rhs.content).atomType) {
+                return list { list::listType::element_l, atom { TRUE_STRING, atom::bool_i }, true };
+            }
+            break;
+        }
+        return list { list::listType::element_l, atom { FALSE_STRING, atom::bool_i }, true };
+    } else if (op == "not" || op == "!") {
+        list res = eval(args.at(0), envIn);
+        assert(res.listType == list::listType::element_l && std::get<atom>(res.content).atomType == atom::bool_i);
+        string boolString = TRUE_STRING;
+        if (std::get<atom>(res.content).content == TRUE_STRING) {
+            boolString = FALSE_STRING;
+        }
+        return list { list::listType::element_l, atom { boolString, atom::bool_i }, true };
+
+    } else if (op == "assert") {
+        list argCheck = eval(args.at(0), envIn);
+        assert(argCheck.listType == list::listType::element_l
+            && std::get<atom>(argCheck.content).atomType == atom::bool_i);
+        if (std::get<atom>(argCheck.content).content == TRUE_STRING) {
+            return emptyList();
+        }
+        list errorRes = eval(args.at(1), envIn);
+        printList({ errorRes });
+        cout << endl;
+        abort();
     } else if (op == "cons") {
         list argLHS = eval(args.at(0), envIn);
         list argRHS = eval(args.at(1), envIn);
@@ -310,6 +343,12 @@ list eval(list listIn, env* envIn)
         printList({ eval(args.at(0), envIn) });
         cout << endl;
         return emptyList();
+    } else if (op == "import") {
+        for (list importElement : args) {
+            assert(importElement.listType == list::listType::element_l && std::get<atom>(importElement.content).atomType == atom::string_i);
+            evalFile(std::get<atom>(importElement.content).content);
+        }
+        return emptyList();
     } else if (op == "lambda") {
         vector<string> argsNames = {};
         assert(args.size() == 2);
@@ -347,4 +386,35 @@ list eval(list listIn, env* envIn)
 list eval(vector<list> listIn, env* envIn) // still default
 {
     return eval(list { list::listType::list_l, listIn, true }, envIn);
+}
+
+void evalFile(string path)
+{
+    string fileName = path;
+    string fileContent("");
+    string temp("");
+    std::ifstream fileInput(fileName);
+    while (getline(fileInput, temp)) {
+        size_t comment = temp.find("--");
+        if (comment == temp.npos) {
+            fileContent.append(temp + "\n");
+        } else {
+            fileContent.append(temp.substr(0, comment));
+        }
+    }
+    fileInput.close();
+
+    vector<list> exprList = std::get<1>(readList(fileContent));
+    for (list a : exprList) {
+        // printList({ a });
+        eval(a);
+        // printList({ eval(a) });
+        // cout << endl;
+    }
+
+    // env myEnv = { { "test" }, { new list { list::listType::element_l, atom { "'", atom::quote_i } } } };
+    // for(auto a: myEnv.content){
+    //     std::cout << a.first << endl;
+    //     printList({a.second});
+    // }
 }

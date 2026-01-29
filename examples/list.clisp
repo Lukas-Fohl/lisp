@@ -1,0 +1,11 @@
+(define show3
+    (lambda (t1f2c) (
+        list 
+            (print (nth 0 t1f2c))
+            (print (nth 1 t1f2c))
+            (print (nth 2 t1f2c))
+    )
+    )
+)
+(show3 (list 1 2 3))
+(show3 (list 4 5 6))

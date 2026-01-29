@@ -7,6 +7,9 @@
 #include <variant>
 #include <vector>
 
+#define FALSE_STRING "f"
+#define TRUE_STRING "t"
+
 using std::endl, std::cout, std::string, std::variant, std::vector, std::tuple, std::map;
 
 typedef struct {
@@ -16,6 +19,7 @@ typedef struct {
         num_i,
         quote_i,
         comma_i,
+        bool_i,
         backComma_i,
         word_i,
         empty_i,
@@ -97,6 +101,8 @@ inline env globalEnv = defaultEnv();
 
 list eval(vector<list> listIn, env* envIn = &globalEnv);
 list eval(list listIn, env* envIn = &globalEnv);
+
+void evalFile(string path);
 
 class macro {
 public:

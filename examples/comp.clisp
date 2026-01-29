@@ -1,0 +1,20 @@
+(import"std.clisp")
+
+(print "True")
+(print (== False False))
+
+(print "False")
+(print (== False True))
+
+(print "False")
+(print (== True False))
+
+(print "True")
+(print (== True True))
+
+(print "Not True")
+(print (! True))
+(print (not True))
+(print "Not False")
+(print (! False))
+(print (not False))

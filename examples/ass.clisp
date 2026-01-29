@@ -1,0 +1,26 @@
+(import "examples/std.clisp")
+
+(assert (== True True) "eq - bool")
+(assert (== "abc" "abc") "eq - string")
+(assert (== 25.0 25) "eq - number, double")
+(assert (== 25 25) "eq - number, normal")
+
+(assert (== (abs -25) 25) "abs - 1")
+(assert (== (abs  25) 25) "abs - 2")
+
+(assert (== (not True) False) "not - 1")
+(assert (not (== True False)) "not - 2")
+
+(assert (== (* 5 -5) -25) "mult - 1")
+(assert (== (* 5 5)   25) "mult - 2")
+
+(assert (== (/ 5 5)   1) "div - 1")
+(assert (== (/ 5 -5) -1) "div - 2")
+
+(assert (== (+ 5 -5) 0) "add - 1")
+(assert (== (+ 5 5) 10) "add - 2")
+
+(assert (== (- 5 -5) 10) "sub - 1")
+(assert (== (- 5 5)   0) "sub - 2")
+
+(print "NO ERROR FOUND :)")

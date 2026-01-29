@@ -1,0 +1,11 @@
+--basic bool
+(define True t)
+(define False f)
+
+-- funcs
+(define self (lambda (y x) (y x x)))
+(define add (lambda (y x) (+ y x)))
+(define sub (lambda (y x) (- y x)))
+(define div (lambda (y x) (/ y x)))
+(define mult (lambda (y x) (* y x)))
+(define apply (lambda (y x z) (y x z)))

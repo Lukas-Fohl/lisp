@@ -1,8 +1,6 @@
 #include <assert.h>
 #include <cmath>
-#include <fstream>
 #include <iostream>
-#include <string>
 
 #include "clisp.hpp"
 
@@ -12,33 +10,7 @@ int main(int argn, char** argc)
         cout << "i don't need to know all of that" << endl;
     }
 
-    string fileName = argc[1];
-    string fileContent("");
-    string temp("");
-    std::ifstream fileInput(fileName);
-    while (getline(fileInput, temp)) {
-        size_t comment = temp.find("--");
-        if (comment == temp.npos) {
-            fileContent.append(temp + "\n");
-        } else {
-            fileContent.append(temp.substr(0, comment));
-        }
-    }
-    fileInput.close();
-
-    vector<list> exprList = std::get<1>(readList(fileContent));
-    for (list a : exprList) {
-        // printList({ a });
-        eval(a);
-        // printList({ eval(a) });
-        // cout << endl;
-    }
-
-    // env myEnv = { { "test" }, { new list { list::listType::element_l, atom { "'", atom::quote_i } } } };
-    // for(auto a: myEnv.content){
-    //     std::cout << a.first << endl;
-    //     printList({a.second});
-    // }
+    evalFile(argc[1]);
 
     return 0;
 }
@@ -84,6 +56,11 @@ COOL things i need to build CURR
             - continue with expression
             - everything led by "," gets evaluated
 
+TODO:
  - add some common function
+   -> move into speratre files/funcs
+   -> if, cond, etc.
  - everything as double
+ - [x] imports
+ - cli
  */
