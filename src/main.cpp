@@ -1,16 +1,65 @@
 #include <assert.h>
 #include <cmath>
 #include <iostream>
+#include <string>
+#include <vector>
 
 #include "clisp.hpp"
 
-int main(int argn, char** argc)
+int main(int argc, char* argv[])
 {
-    if (argn > 2) {
-        cout << "i don't need to know all of that" << endl;
+    if (argc > 2) {
+        std::cout << "Too many arguments. Usage: clisp <file> or clisp -c" << std::endl;
+        return 1;
     }
 
-    evalFile(argc[1]);
+    if (argc < 2) {
+        std::cout << "No file provided. Usage: clisp <file> or clisp -c" << std::endl;
+        return 1;
+    }
+
+    std::string arg = argv[1];
+
+    if (arg == "-c") {
+        std::string buffer;
+        while (true) {
+            std::cout << (buffer.empty() ? "clisp> " : "... ");
+            std::string lineIn;
+            if (!std::getline(std::cin, lineIn)) {
+                break;
+            }
+            buffer += lineIn;
+            if (buffer.empty())
+                continue;
+
+            int parens = 0;
+            for (char c : buffer) {
+                if (parens < 0)
+                    giveUp("what are you doing?");
+                if (c == '(')
+                    parens++;
+                if (c == ')')
+                    parens--;
+            }
+
+            if (parens == 0) {
+                try {
+                    auto result = readList("(" + buffer + ")");
+                    buffer.clear();
+                    std::vector<list> exprList = std::get<1>(result);
+                    if (exprList.size() < 1) {
+                        break;
+                    }
+                    eval(exprList.at(0));
+                } catch (const std::exception& e) {
+                    std::cerr << "Error: " << e.what() << std::endl;
+                    buffer.clear();
+                }
+            }
+        }
+    } else {
+        evalFile(arg);
+    }
 
     return 0;
 }

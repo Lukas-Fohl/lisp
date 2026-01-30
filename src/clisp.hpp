@@ -6,6 +6,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <optional>
 
 #define FALSE_STRING "f"
 #define TRUE_STRING "t"
@@ -73,6 +74,18 @@ public:
             this->content.insert({ namesIn.at(i), elementsIn.at(i) });
         }
     }
+    std::optional<list> safeFind(string target){
+        auto location = this->content.find(target);
+        if (location != this->content.end()) {
+            return location->second;
+        } else if (this->outer != NULL) {
+            return outer->find(target);
+        } else {
+            return {};
+        }
+        return emptyList();
+    }
+
     list find(string target)
     {
         auto location = this->content.find(target);

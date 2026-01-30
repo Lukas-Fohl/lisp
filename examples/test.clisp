@@ -11,7 +11,7 @@
 
 
 -- import
-(import "list.clisp" "std.clisp")
+(import "examples/list.clisp" "examples/std.clisp")
 
 -- application
 (print "some cool addition")

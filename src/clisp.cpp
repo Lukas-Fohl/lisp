@@ -242,7 +242,7 @@ list eval(list listIn, env* envIn)
 
     if (auto findFunc = arithmeticFuncMap.find(op); findFunc != arithmeticFuncMap.end()) {
         return findFunc->second(args, envIn);
-    } else if (op == "==") {
+    } else if (op == "=") {
         list lhs = eval(args.at(0), envIn);
         list rhs = eval(args.at(1), envIn);
         if (lhs.listType != rhs.listType || lhs.listType == list::listType::empty_l || rhs.listType == list::listType::empty_l) { // undefined is false
@@ -332,7 +332,13 @@ list eval(list listIn, env* envIn)
             && args.at(0).listType == list::listType::element_l
             && std::get<atom>(args.at(0).content).atomType == atom::word_i);
         list res = eval(args.at(1), envIn);
-        envIn->content.insert({ std::get<atom>(args.at(0).content).content, res });
+        string name = std::get<atom>(args.at(0).content).content;
+        auto procList = envIn->safeFind(name);
+        if (procList) {
+            envIn->content[name] = res;
+        } else {
+            envIn->content.insert({ name, res });
+        }
     } else if (op == "list") {
         vector<list> rest = {};
         for (auto l : args) {

@@ -67,3 +67,14 @@ list sqrt(vector<list> args, env* envIn)
     double res = std::sqrt(numArgD);
     return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
 }
+
+list power(vector<list> args, env* envIn)
+{
+    list lhs = eval(args.at(0), envIn);
+    list rhs = eval(args.at(1), envIn);
+    assert(rhs.listType == list::listType::element_l && lhs.listType == list::listType::element_l);
+    double lhsD = std::atof(std::get<atom>(lhs.content).content.c_str());
+    double rhsD = std::atof(std::get<atom>(rhs.content).content.c_str());
+    double res = pow(lhsD, rhsD);
+    return list { list::listType::element_l, atom { std::to_string(res), atom::num_i }, true };
+}

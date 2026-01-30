@@ -19,6 +19,8 @@ list div(vector<list> args, env* envIn);
 
 list sqrt(vector<list> args, env* envIn);
 
+list power(vector<list> args, env* envIn);
+
 map<string, defaultFunc> arithmeticFuncMap = {
     { "abs", abs },
     { "+", plus },
@@ -26,4 +28,5 @@ map<string, defaultFunc> arithmeticFuncMap = {
     { "*", mult },
     { "/", div },
     { "sqrt", sqrt },
+    { "power", power },
 };
