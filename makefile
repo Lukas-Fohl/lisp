@@ -5,7 +5,7 @@ DEST = build/main
 TEST_FILE = example/ass.clisp
 
 build:
-	if [ ! -d "build" ]; then  mkdir ../build/; fi
+	if [ ! -d "build" ]; then  mkdir ./build/; fi
 	$(CC) $(SRC) -o $(DEST) $(FLAGS)
 
 run: build

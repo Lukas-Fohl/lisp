@@ -1,6 +1,7 @@
 --basic bool
 (define True t)
 (define False f)
+(define Otherwise t)
 
 -- funcs
 (define self (lambda (y x) (y x x)))

@@ -50,7 +50,8 @@ int main(int argc, char* argv[])
                     if (exprList.size() < 1) {
                         break;
                     }
-                    eval(exprList.at(0));
+                    printList({ eval(exprList.at(0)) });
+                    cout << endl;
                 } catch (const std::exception& e) {
                     std::cerr << "Error: " << e.what() << std::endl;
                     buffer.clear();
@@ -72,27 +73,6 @@ reading rules:
  - {' , `} as single element
  - else just as word
 
-COOL things i need to build CURR
- - [x] env
- - [x] Prcedure (lambda)
-    - [x] class
-    - [x] print
-    - [x] everything in eval
-        - [x] if lambda return procedure
-        - [x] if not found eval -> check for lambda
-            - lambda call:
-                - first element of list can be:
-                    [x] list
-                        check if first is lambda
-                        -> eval to proc
-                        -> call
-                    [x] word
-                        -> check if return is procedure
-                        -> call
-                    [x] procedure
-                        -> call
-        - [x] on call insert new env -> in class
-
  - macro -> do the macro stuff
     - if "macro" is found put like function into macro
     - before eval anything:
@@ -111,5 +91,6 @@ TODO:
    -> if, cond, etc.
  - everything as double
  - [x] imports
- - cli
+ - [x] cli
+ - macro -> replace on eval, test, and other shit
  */

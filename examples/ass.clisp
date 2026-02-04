@@ -1,5 +1,6 @@
 (import "examples/std.clisp")
 
+-- Arithmetic
 (assert (= True True) "eq - bool")
 (assert (= "abc" "abc") "eq - string")
 (assert (= 25.0 25) "eq - number, double")
@@ -29,5 +30,44 @@
 
 (assert (= (power 5 2) 25) "power - 1")
 (assert (= (power 25 0.5) 5) "power - 2")
+
+-- Control flow
+(assert (= (if True True False) True) "if - 1")
+(assert (= (if (= 1 2) 1 2 ) 2) "if - 2")
+
+(assert (= 
+    (cond 
+        (True) 1 
+        (False) 2)
+1) "cond - 1")
+(assert (= 
+    (cond 
+        (False) 1 
+        (False) 2)
+e_t) "cond - 2")
+(assert (= 
+    (cond 
+        (True) 1 
+        (False) 2)
+1) "cond - 3")
+
+-- List stuff
+(assert (= (cons () ()) ()) "cons - 1")
+(assert (= (cons (list 1) (list 2)) (list 1 2)) "cons - 2")
+
+(assert (= (append 1 ()) (list 1)) "append - 1")
+(assert (= (append 2 (list 1) (list 1 2)) (list 1 2)) "append - 2")
+
+(assert (= (car (list 1 2 3)) 1) "car - 1")
+(assert (= (car ()) ()) "car - 2")
+
+(assert (= (cdr (list 1 2 3)) (list 2 3)) "cdr - 1")
+(assert (= (cdr ()) ()) "cdr - 2")
+
+(assert (= (nth 1 (list 1 2 3)) 2) "nth - 1")
+(assert (= (nth 0 (list 1 2 3)) 1) "nth - 2")
+
+(assert (= (list 1) (list 1)) "list - 1")
+(assert (= (list ()) (list ())) "list - 2")
 
 (print "NO ERROR FOUND :)")
